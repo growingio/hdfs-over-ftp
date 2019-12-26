@@ -1,42 +1,46 @@
 package org.apache.hadoop.contrib.ftp;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * Class to store DFS connection
  */
 public class HdfsOverFtpSystem {
 
-	private static DistributedFileSystem dfs = null;
-
-	public static String HDFS_URI = "";
-
+	private static FileSystem dfs = null;
 	private static String superuser = "error";
 	private static String supergroup = "supergroup";
 
-	private final static Logger log = LoggerFactory.getLogger(HdfsOverFtpSystem.class);
+	private static HdfsOverFtpConf ftpConf = null;
 
+	private static Path dataDir = null;
 
 	private static void hdfsInit() throws IOException {
-		dfs = new DistributedFileSystem();
-		Configuration conf = new Configuration();
-		conf.set("hadoop.job.ugi", superuser + "," + supergroup);
-		try {
-			dfs.initialize(new URI(HDFS_URI), conf);
-		} catch (URISyntaxException e) {
-			log.error("DFS Initialization error", e);
-		}
+        Configuration conf = new Configuration();
+        conf.set("hadoop.job.ugi", superuser + "," + supergroup);
+		dfs = dataDir.getFileSystem(conf);
+        dfs.setWriteChecksum(false);
+        dfs.setVerifyChecksum(false);
+        dfs.setWorkingDirectory(dataDir);
+        // 初始化目录
+        if (!dfs.exists(dataDir)) {
+            dfs.mkdirs(dataDir);
+        }
 	}
 
-	public static void setHDFS_URI(String HDFS_URI) {
-		HdfsOverFtpSystem.HDFS_URI = HDFS_URI;
+	public static void setConf(HdfsOverFtpConf conf) {
+		HdfsOverFtpSystem.ftpConf = conf;
+		superuser = conf.getSuperuser();
+		Path p = new Path(conf.getHdfsPath());
+		// 硬编码
+        if (p.toUri().getPath().equals("/")) {
+            throw new IllegalArgumentException("文件路径不能使用根路径: /");
+        }
+        dataDir = p;
 	}
 
 	/**
@@ -45,23 +49,21 @@ public class HdfsOverFtpSystem {
 	 * @return dfs
 	 * @throws IOException
 	 */
-	public static DistributedFileSystem getDfs() throws IOException {
+	public static FileSystem getDfs() throws IOException {
 		if (dfs == null) {
 			hdfsInit();
 		}
 		return dfs;
 	}
 
-	/**
-	 * Set superuser. and we connect to DFS as a superuser
-	 *
-	 * @param superuser
-	 */
-	public static void setSuperuser(String superuser) {
-		HdfsOverFtpSystem.superuser = superuser;
-	}
+    /**
+     * 获取数据根目录
+     */
+    public static Path getDataDir() {
+        return dataDir;
+    }
 
-//  public static String dirList(String path) throws IOException {
+    //  public static String dirList(String path) throws IOException {
 //    String res = "";
 //
 //        getDfs();

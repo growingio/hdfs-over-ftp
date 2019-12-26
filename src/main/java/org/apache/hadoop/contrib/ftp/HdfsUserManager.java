@@ -3,6 +3,7 @@ package org.apache.hadoop.contrib.ftp;
 import org.apache.ftpserver.FtpServerConfigurationException;
 import org.apache.ftpserver.ftplet.*;
 import org.apache.ftpserver.usermanager.*;
+import org.apache.ftpserver.usermanager.impl.*;
 import org.apache.ftpserver.util.BaseProperties;
 import org.apache.ftpserver.util.IoUtils;
 import org.slf4j.Logger;
@@ -12,7 +13,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Extended AbstractUserManager to use  HdfsUser
@@ -32,8 +38,13 @@ public class HdfsUserManager extends AbstractUserManager {
 
 	private boolean isConfigured = false;
 
-	private PasswordEncryptor passwordEncryptor = new Md5PasswordEncryptor();
+    public HdfsUserManager() {
+        this(null, new Md5PasswordEncryptor());
+    }
 
+    public HdfsUserManager(String adminName, PasswordEncryptor passwordEncryptor) {
+        super(adminName, passwordEncryptor);
+    }
 
 	/**
 	 * Retrieve the file used to load and store users
@@ -56,27 +67,6 @@ public class HdfsUserManager extends AbstractUserManager {
 		}
 
 		this.userDataFile = propFile;
-	}
-
-
-	/**
-	 * Retrieve the password encryptor used for this user manager
-	 *
-	 * @return The password encryptor. Default to {@link Md5PasswordEncryptor}
-	 *         if no other has been provided
-	 */
-	public PasswordEncryptor getPasswordEncryptor() {
-		return passwordEncryptor;
-	}
-
-
-	/**
-	 * Set the password encryptor to use for this user manager
-	 *
-	 * @param passwordEncryptor The password encryptor
-	 */
-	public void setPasswordEncryptor(PasswordEncryptor passwordEncryptor) {
-		this.passwordEncryptor = passwordEncryptor;
 	}
 
 
@@ -146,7 +136,8 @@ public class HdfsUserManager extends AbstractUserManager {
 	/**
 	 * Save user data. Store the properties.
 	 */
-	public synchronized void save(User usr) throws FtpException {
+	@Override
+    public synchronized void save(User usr) throws FtpException {
 		lazyInit();
 
 		// null value check
@@ -230,7 +221,8 @@ public class HdfsUserManager extends AbstractUserManager {
 	 * Delete an user. Removes all this user entries from the properties. After
 	 * removing the corresponding from the properties, save the data.
 	 */
-	public synchronized void delete(String usrName) throws FtpException {
+	@Override
+    public synchronized void delete(String usrName) throws FtpException {
 		lazyInit();
 
 		// remove entries from properties
@@ -269,9 +261,9 @@ public class HdfsUserManager extends AbstractUserManager {
 		String password = usr.getPassword();
 
 		if (password != null) {
-			password = passwordEncryptor.encrypt(password);
+			password = getPasswordEncryptor().encrypt(password);
 		} else {
-			String blankPassword = passwordEncryptor.encrypt("");
+			String blankPassword = getPasswordEncryptor().encrypt("");
 
 			if (doesExist(name)) {
 				String key = PREFIX + name + '.' + ATTR_PASSWORD;
@@ -286,7 +278,8 @@ public class HdfsUserManager extends AbstractUserManager {
 	/**
 	 * Get all user names.
 	 */
-	public synchronized String[] getAllUserNames() {
+	@Override
+    public synchronized String[] getAllUserNames() {
 		lazyInit();
 
 		// get all user names
@@ -317,7 +310,8 @@ public class HdfsUserManager extends AbstractUserManager {
 	/**
 	 * Load user data.
 	 */
-	public synchronized User getUserByName(String userName) {
+	@Override
+    public synchronized User getUserByName(String userName) {
 		lazyInit();
 
 		if (!doesExist(userName)) {
@@ -354,7 +348,7 @@ public class HdfsUserManager extends AbstractUserManager {
 
 		authorities.add(new TransferRatePermission(downloadRate, uploadRate));
 
-		user.setAuthorities(authorities.toArray(new Authority[0]));
+		user.setAuthorities(authorities);
 
 		user.setMaxIdleTime(userDataProp.getInteger(baseKey
 				+ ATTR_MAX_IDLE_TIME, 0));
@@ -401,7 +395,7 @@ public class HdfsUserManager extends AbstractUserManager {
 				throw new AuthenticationFailedException("Authentication failed");
 			}
 
-			if (passwordEncryptor.matches(password, storedPassword)) {
+			if (getPasswordEncryptor().matches(password, storedPassword)) {
 				return getUserByName(user);
 			} else {
 				throw new AuthenticationFailedException("Authentication failed");

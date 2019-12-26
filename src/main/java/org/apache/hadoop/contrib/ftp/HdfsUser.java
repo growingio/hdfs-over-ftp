@@ -26,9 +26,9 @@ public class HdfsUser implements User, Serializable {
 
 	private boolean isEnabled = true;
 
-	private Authority[] authorities = new Authority[0];
+    private List<? extends Authority> authorities = new ArrayList<>();
 
-	private ArrayList<String> groups = new ArrayList<String>();
+    private ArrayList<String> groups = new ArrayList<>();
 
 	private Logger log = Logger.getLogger(HdfsUser.class);
 
@@ -63,7 +63,7 @@ public class HdfsUser implements User, Serializable {
 		if (groups.size() > 0) {
 			return groups.get(0);
 		} else {
-			log.error("User " + name + " is not a memer of any group");
+			log.error("User " + name + " is not a member of any group");
 			return "error";
 		}
 	}
@@ -98,7 +98,8 @@ public class HdfsUser implements User, Serializable {
 	/**
 	 * Get the user name.
 	 */
-	public String getName() {
+	@Override
+    public String getName() {
 		return name;
 	}
 
@@ -112,7 +113,8 @@ public class HdfsUser implements User, Serializable {
 	/**
 	 * Get the user password.
 	 */
-	public String getPassword() {
+	@Override
+    public String getPassword() {
 		return password;
 	}
 
@@ -123,17 +125,18 @@ public class HdfsUser implements User, Serializable {
 		password = pass;
 	}
 
-	public Authority[] getAuthorities() {
+	@Override
+    public List<Authority> getAuthorities() {
 		if (authorities != null) {
-			return authorities.clone();
+			return new ArrayList<Authority>(authorities);
 		} else {
 			return null;
 		}
 	}
 
-	public void setAuthorities(Authority[] authorities) {
+	public void setAuthorities(List<Authority> authorities) {
 		if (authorities != null) {
-			this.authorities = authorities.clone();
+			this.authorities = new ArrayList<Authority>(authorities);
 		} else {
 			this.authorities = null;
 		}
@@ -142,7 +145,8 @@ public class HdfsUser implements User, Serializable {
 	/**
 	 * Get the maximum idle time in second.
 	 */
-	public int getMaxIdleTime() {
+	@Override
+    public int getMaxIdleTime() {
 		return maxIdleTimeSec;
 	}
 
@@ -159,7 +163,8 @@ public class HdfsUser implements User, Serializable {
 	/**
 	 * Get the user enable status.
 	 */
-	public boolean getEnabled() {
+	@Override
+    public boolean getEnabled() {
 		return isEnabled;
 	}
 
@@ -173,7 +178,8 @@ public class HdfsUser implements User, Serializable {
 	/**
 	 * Get the user home directory.
 	 */
-	public String getHomeDirectory() {
+	@Override
+    public String getHomeDirectory() {
 		return homeDir;
 	}
 
@@ -187,15 +193,17 @@ public class HdfsUser implements User, Serializable {
 	/**
 	 * String representation.
 	 */
-	public String toString() {
+	@Override
+    public String toString() {
 		return name;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public AuthorizationRequest authorize(AuthorizationRequest request) {
-		Authority[] authorities = getAuthorities();
+	@Override
+    public AuthorizationRequest authorize(AuthorizationRequest request) {
+        List<Authority> authorities = getAuthorities();
 
 		// check for no authorities at all
 		if (authorities == null) {
@@ -203,8 +211,8 @@ public class HdfsUser implements User, Serializable {
 		}
 
 		boolean someoneCouldAuthorize = false;
-		for (int i = 0; i < authorities.length; i++) {
-			Authority authority = authorities[i];
+		for (int i = 0; i < authorities.size(); i++) {
+			Authority authority = authorities.get(i);
 
 			if (authority.canAuthorize(request)) {
 				someoneCouldAuthorize = true;
@@ -229,15 +237,16 @@ public class HdfsUser implements User, Serializable {
 	/**
 	 * {@inheritDoc}
 	 */
-	public Authority[] getAuthorities(Class<? extends Authority> clazz) {
+	@Override
+    public List<Authority> getAuthorities(Class<? extends Authority> clazz) {
 		List<Authority> selected = new ArrayList<Authority>();
 
-		for (int i = 0; i < authorities.length; i++) {
-			if (authorities[i].getClass().equals(clazz)) {
-				selected.add(authorities[i]);
+		for (int i = 0; i < authorities.size(); i++) {
+			if (authorities.get(i).getClass().equals(clazz)) {
+				selected.add(authorities.get(i));
 			}
 		}
 
-		return selected.toArray(new Authority[0]);
+		return selected;
 	}
 }

@@ -1,9 +1,9 @@
 package org.apache.hadoop.contrib.ftp;
 
 import org.apache.ftpserver.FtpServerConfigurationException;
-import org.apache.ftpserver.ssl.AliasKeyManager;
+import org.apache.ftpserver.ssl.impl.AliasKeyManager;
 import org.apache.ftpserver.ssl.ClientAuth;
-import org.apache.ftpserver.ssl.ExtendedAliasKeyManager;
+import org.apache.ftpserver.ssl.impl.ExtendedAliasKeyManager;
 import org.apache.ftpserver.ssl.SslConfiguration;
 import org.apache.ftpserver.util.ClassUtils;
 import org.apache.ftpserver.util.IoUtils;
@@ -232,7 +232,7 @@ public class MySslConfiguration implements SslConfiguration {
 	/**
 	 * Set the trust store type
 	 *
-	 * @param keystoreType The trust store type
+	 * @param trustStoreType The trust store type
 	 */
 	public void setTruststoreType(String trustStoreType) {
 		this.trustStoreType = trustStoreType;
@@ -379,7 +379,20 @@ public class MySslConfiguration implements SslConfiguration {
 		return clientAuthReqd;
 	}
 
-	/**
+    /**
+     * Returns the socket factory that can be used to create sockets using
+     * this <code>SslConfiguration</code>.
+     *
+     * @return the socket factory that can be used to create sockets using this
+     * <code>SslConfiguration</code>.
+     * @throws GeneralSecurityException if any error occurs while creating the
+     *                                  socket factory.
+     */
+    public SSLSocketFactory getSocketFactory() throws GeneralSecurityException {
+        return getSSLContext().getSocketFactory();
+    }
+
+    /**
 	 * @see SslConfiguration#getSSLContext()
 	 */
 	public SSLContext getSSLContext() throws GeneralSecurityException {
