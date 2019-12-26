@@ -43,7 +43,7 @@ public class HdfsFileObject implements FtpFile {
     public HdfsFileObject(String path, User user, Boolean create) {
         // 加入工作目录前缀
         this.user = (HdfsUser) user;
-        this.path = this.removeHdfsDataDir(new Path(path));
+        this.path = new Path(path);
         this.hdfsPath = this.concatPath(HdfsOverFtpSystem.getDataDir(), new Path(user.getName()), this.path);
 
         FileSystem fs = null;
@@ -97,7 +97,7 @@ public class HdfsFileObject implements FtpFile {
     private Path removeHdfsDataDir(Path p) {
         String pathInHdfs = p.toUri().getPath();
         Path hdfsWorkDir = this.concatPath(HdfsOverFtpSystem.getDataDir(), new Path(user.getName()));
-        String actualPath = pathInHdfs.replaceAll(hdfsWorkDir.toUri().getPath(), "");
+        String actualPath = pathInHdfs.replace(hdfsWorkDir.toUri().getPath(), "");
         if (!actualPath.startsWith("/")) {
             actualPath = "/" + actualPath;
         }
@@ -477,7 +477,8 @@ public class HdfsFileObject implements FtpFile {
             ArrayList<FtpFile> fileObjects = new ArrayList<FtpFile>();
 			for (int i = 0; i < fileStats.length; i++) {
 			    // 移除hdfs的工作目录
-                fileObjects.add(new HdfsFileObject(fileStats[i].getPath().toUri().getPath(), user));
+                Path actualPath = this.removeHdfsDataDir(fileStats[i].getPath());
+                fileObjects.add(new HdfsFileObject(actualPath.toUri().getPath(), user));
 			}
 			return fileObjects;
 		} catch (IOException e) {
