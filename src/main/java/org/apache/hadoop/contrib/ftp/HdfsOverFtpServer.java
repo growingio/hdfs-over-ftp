@@ -3,7 +3,12 @@ package org.apache.hadoop.contrib.ftp;
 import org.apache.ftpserver.DataConnectionConfigurationFactory;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
+import org.apache.ftpserver.command.CommandFactory;
+import org.apache.ftpserver.command.CommandFactoryFactory;
 import org.apache.ftpserver.listener.ListenerFactory;
+import org.apache.hadoop.contrib.ftp.command.SHA1;
+import org.apache.hadoop.contrib.ftp.command.SHA256;
+import org.apache.hadoop.contrib.ftp.command.SHA512;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -64,6 +69,9 @@ public class HdfsOverFtpServer {
 		userManager.setFile(file);
         serverFactory.setUserManager(userManager);
         serverFactory.setFileSystem(new HdfsFileSystemManager());
+        serverFactory.setCommandFactory(createCommandFactory());
+
+        // start
         FtpServer server = serverFactory.createServer();
 		server.start();
 	}
@@ -110,12 +118,21 @@ public class HdfsOverFtpServer {
 
 		HdfsUserManager userManager = new HdfsUserManager();
 		userManager.setFile(new File("users.conf"));
-
         serverFactory.setUserManager(userManager);
-
         serverFactory.setFileSystem(new HdfsFileSystemManager());
+        serverFactory.setCommandFactory(createCommandFactory());
 
+        // start
         FtpServer server = serverFactory.createServer();
 		server.start();
 	}
+
+	// add site command
+	private static CommandFactory createCommandFactory() {
+        CommandFactoryFactory cFac = new CommandFactoryFactory();
+        cFac.addCommand("SHA1", new SHA1());
+        cFac.addCommand("SHA256", new SHA256());
+        cFac.addCommand("SHA512", new SHA512());
+        return cFac.createCommandFactory();
+    }
 }

@@ -46,14 +46,28 @@ public class HdfsFileObject implements FtpFile {
         this.path = this.removeHdfsDataDir(new Path(path));
         this.hdfsPath = this.concatPath(HdfsOverFtpSystem.getDataDir(), new Path(user.getName()), this.path);
 
+        FileSystem fs = null;
         try {
-            FileSystem fs = HdfsOverFtpSystem.getDfs();
+            fs = HdfsOverFtpSystem.getDfs();
             if (create && !fs.exists(this.hdfsPath)) {
                 fs.mkdirs(this.hdfsPath);
+                if (!HdfsOverFtpSystem.getFtpConf().isPermission()) {
+                    fs.setPermission(hdfsPath, FsPermission.getDefault());
+                }
                 fs.setOwner(this.hdfsPath, this.user.getName(), this.user.getMainGroup());
             }
         } catch (Exception e) {
-            // ignore
+            log.error("", e);
+            // 本地文件系统, 使用 superuser:supergroup 作为 user:group
+            if (e.getMessage().contains("chown: invalid")) {
+                try {
+                    if (fs != null) {
+                        fs.setOwner(hdfsPath, HdfsOverFtpSystem.getSuperuser(), HdfsOverFtpSystem.getSupergroup());
+                    }
+                } catch (Exception e2) {
+                    // ignore
+                }
+            }
         }
     }
 
@@ -381,13 +395,28 @@ public class HdfsFileObject implements FtpFile {
 			return false;
 		}
 
+        FileSystem dfs = null;
 		try {
-            FileSystem dfs = HdfsOverFtpSystem.getDfs();
+            dfs = HdfsOverFtpSystem.getDfs();
 			dfs.mkdirs(hdfsPath);
+			if (!HdfsOverFtpSystem.getFtpConf().isPermission()) {
+                dfs.setPermission(hdfsPath, FsPermission.getDefault());
+            }
 			dfs.setOwner(hdfsPath, user.getName(), user.getMainGroup());
 			return true;
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("", e);
+            // 本地文件系统, 使用 superuser:supergroup 作为 user:group
+            if (e.getMessage().contains("chown: invalid")) {
+                try {
+                    if (dfs != null) {
+                        dfs.setOwner(hdfsPath, HdfsOverFtpSystem.getSuperuser(), HdfsOverFtpSystem.getSupergroup());
+                    }
+                    return true;
+                } catch (Exception e2) {
+                    // ignore
+                }
+            }
 			return false;
 		}
 	}
@@ -404,7 +433,7 @@ public class HdfsFileObject implements FtpFile {
 			dfs.delete(hdfsPath, true);
 			return true;
 		} catch (IOException e) {
-			e.printStackTrace();
+            log.error("", e);
 			return false;
 		}
 	}
@@ -423,7 +452,7 @@ public class HdfsFileObject implements FtpFile {
             dfs.rename(hdfsPath, hdfsFileObject.hdfsPath);
 			return true;
 		} catch (IOException e) {
-			e.printStackTrace();
+            log.error("", e);
 			return false;
 		}
 	}
@@ -472,13 +501,22 @@ public class HdfsFileObject implements FtpFile {
 			throw new IOException("No write permission : " + path);
 		}
 
+        FileSystem dfs = HdfsOverFtpSystem.getDfs();
+        FSDataOutputStream out = null;
 		try {
-            FileSystem dfs = HdfsOverFtpSystem.getDfs();
-			FSDataOutputStream out = dfs.create(hdfsPath);
+			out = dfs.create(hdfsPath);
+            if (!HdfsOverFtpSystem.getFtpConf().isPermission()) {
+                dfs.setPermission(hdfsPath, FsPermission.getDefault());
+            }
 			dfs.setOwner(hdfsPath, user.getName(), user.getMainGroup());
 			return out;
 		} catch (IOException e) {
-			e.printStackTrace();
+            log.error("", e);
+            // 本地文件系统, 使用 supergroup:superuser 作为 user:group
+            if (e.getMessage().contains("chown: invalid")) {
+                dfs.setOwner(hdfsPath, HdfsOverFtpSystem.getSuperuser(), HdfsOverFtpSystem.getSupergroup());
+                return out;
+            }
 			return null;
 		}
 	}

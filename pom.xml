@@ -9,7 +9,7 @@
     <version>${revision}</version>
 
     <properties>
-        <revision>GIO-1.0</revision>
+        <revision>GIO-1.1</revision>
         <packageName>hdfs-over-ftp</packageName>
         <hadoop.version>2.7.7</hadoop.version>
         <ftp.version>1.1.1</ftp.version>
@@ -67,7 +67,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <finalName>${packageName}</finalName>
+                    <finalName>${packageName}-${revision}</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                     <descriptors>
                         <descriptor>assembly.xml</descriptor>

@@ -18,15 +18,19 @@ public class HdfsOverFtpConf implements Serializable {
     private static Logger log = Logger.getLogger(HdfsOverFtpConf.class);
 
     private String hdfsPath;
+    private boolean permission;
     private String superuser;
+    private String supergroup;
     private Integer port;
     private Integer sslPort;
     private String passivePorts;
     private String sslPassivePorts;
 
-    public HdfsOverFtpConf(String hdfsPath, String superuser, Integer port, Integer sslPort, String passivePorts, String sslPassivePorts) {
+    public HdfsOverFtpConf(String hdfsPath, boolean permission, String superuser, String supergroup, Integer port, Integer sslPort, String passivePorts, String sslPassivePorts) {
         this.hdfsPath = hdfsPath;
+        this.permission = permission;
         this.superuser = superuser;
+        this.supergroup = supergroup;
         this.port = port;
         this.sslPort = sslPort;
         this.passivePorts = passivePorts;
@@ -39,6 +43,10 @@ public class HdfsOverFtpConf implements Serializable {
 
     public String getSuperuser() {
         return superuser;
+    }
+
+    public String getSupergroup() {
+        return supergroup;
     }
 
     public Integer getPort() {
@@ -57,6 +65,10 @@ public class HdfsOverFtpConf implements Serializable {
         return sslPassivePorts;
     }
 
+    public boolean isPermission() {
+        return permission;
+    }
+
     /**
      * 加载配置
      */
@@ -66,6 +78,7 @@ public class HdfsOverFtpConf implements Serializable {
 
         int port = 0;
         int sslPort = 0;
+        boolean permission;
         String passivePorts = null;
         String sslPassivePorts = null;
         String hdfsUri = null;
@@ -105,20 +118,30 @@ public class HdfsOverFtpConf implements Serializable {
             System.exit(1);
         }
 
+        permission = Boolean.valueOf(props.getProperty("permission", "false"));
+
         String superuser = props.getProperty("superuser");
         if (superuser == null) {
             log.fatal("superuser is not set");
             System.exit(1);
         }
 
-        return new HdfsOverFtpConf(hdfsUri, superuser, port, sslPort, passivePorts, sslPassivePorts);
+        String supergroup = props.getProperty("supergroup");
+        if (supergroup == null) {
+            log.fatal("supergroup is not set");
+            System.exit(1);
+        }
+
+        return new HdfsOverFtpConf(hdfsUri, permission, superuser, supergroup, port, sslPort, passivePorts, sslPassivePorts);
     }
 
     @Override
     public String toString() {
         return "HdfsOverFtpConf{" +
                 "hdfsPath='" + hdfsPath + '\'' +
+                ", permission=" + permission +
                 ", superuser='" + superuser + '\'' +
+                ", supergroup='" + supergroup + '\'' +
                 ", port=" + port +
                 ", sslPort=" + sslPort +
                 ", passivePorts='" + passivePorts + '\'' +

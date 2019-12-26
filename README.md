@@ -27,3 +27,8 @@ sudo curlftpfs  -o allow_other ftp://user:pass@localhost:2222 ftpfs
   * hadoop-2.7.7, ftp-1.1.1
   * Build tar.gz
   * Use `FileSystem` to support hcfs
+* GIO-1.1
+  * Add `permission` disable
+  * Add `supergroup` property
+  * Support command: `SHA1`, `SHA256`, `SHA512` 
+  

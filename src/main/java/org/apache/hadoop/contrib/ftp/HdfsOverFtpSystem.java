@@ -3,6 +3,7 @@ package org.apache.hadoop.contrib.ftp;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 
 import java.io.IOException;
 
@@ -16,7 +17,6 @@ public class HdfsOverFtpSystem {
 	private static String supergroup = "supergroup";
 
 	private static HdfsOverFtpConf ftpConf = null;
-
 	private static Path dataDir = null;
 
 	private static void hdfsInit() throws IOException {
@@ -26,6 +26,10 @@ public class HdfsOverFtpSystem {
         dfs.setWriteChecksum(false);
         dfs.setVerifyChecksum(false);
         dfs.setWorkingDirectory(dataDir);
+        if (!ftpConf.isPermission()) {
+            dfs.setPermission(dataDir, FsPermission.getDefault());
+            dfs.setOwner(dataDir, superuser, supergroup);
+        }
         // 初始化目录
         if (!dfs.exists(dataDir)) {
             dfs.mkdirs(dataDir);
@@ -35,6 +39,7 @@ public class HdfsOverFtpSystem {
 	public static void setConf(HdfsOverFtpConf conf) {
 		HdfsOverFtpSystem.ftpConf = conf;
 		superuser = conf.getSuperuser();
+		supergroup = conf.getSupergroup();
 		Path p = new Path(conf.getHdfsPath());
 		// 硬编码
         if (p.toUri().getPath().equals("/")) {
@@ -43,7 +48,11 @@ public class HdfsOverFtpSystem {
         dataDir = p;
 	}
 
-	/**
+    public static HdfsOverFtpConf getFtpConf() {
+        return ftpConf;
+    }
+
+    /**
 	 * Get dfs
 	 *
 	 * @return dfs
@@ -61,6 +70,14 @@ public class HdfsOverFtpSystem {
      */
     public static Path getDataDir() {
         return dataDir;
+    }
+
+    public static String getSuperuser() {
+        return superuser;
+    }
+
+    public static String getSupergroup() {
+        return supergroup;
     }
 
     //  public static String dirList(String path) throws IOException {
