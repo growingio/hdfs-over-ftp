@@ -1,0 +1,21 @@
+app: hdfs-over-ftp
+units:
+  - name: hdfs-over-ftp
+    ports:
+      - name: http
+        protocol: tcp
+    command: "{{ app_deploy_dir }}/bin/start.sh"
+configs:
+  - path: conf/hdfs-over-ftp.properties.tpl
+  - path: conf/log4j.properties.tpl
+custom_configs:
+  - name: port
+    default: 2222
+  - name: data_port
+    default: 2223-2225
+  - name: data_dir
+    default: hdfs://growingFS/ftp
+  - name: superuser
+    default: gio
+  - name: supergroup
+    default: supergroup

@@ -47,6 +47,7 @@
             <fileMode>0755</fileMode>
             <includes>
                 <include>*.properties</include>
+                <include>*.tpl</include>
             </includes>
         </fileSet>
         <fileSet>
