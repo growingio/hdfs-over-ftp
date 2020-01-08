@@ -10,7 +10,7 @@
 
     <properties>
         <revision>GIO-1.1</revision>
-        <packageName>hdfs-over-ftp</packageName>
+        <packageName>hdfs-over-ftp-GIO-1.1</packageName>
         <hadoop.version>2.7.7</hadoop.version>
         <ftp.version>1.1.1</ftp.version>
     </properties>
