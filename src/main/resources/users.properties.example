@@ -9,15 +9,3 @@ ftpserver.user.admin.idletime=0
 ftpserver.user.admin.uploadrate=0
 ftpserver.user.admin.downloadrate=0
 ftpserver.user.admin.groups=supergroup
-
-# apps
-ftpserver.user.apps.userpassword=cef75f73004a5afff2b09eee297fa64c
-ftpserver.user.apps.homedirectory=/
-ftpserver.user.apps.enableflag=true
-ftpserver.user.apps.writepermission=true
-ftpserver.user.apps.maxloginnumber=0
-ftpserver.user.apps.maxloginperip=0
-ftpserver.user.apps.idletime=0
-ftpserver.user.apps.uploadrate=0
-ftpserver.user.apps.downloadrate=0
-ftpserver.user.apps.groups=apps
