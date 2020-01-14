@@ -47,7 +47,7 @@
             <fileMode>0755</fileMode>
             <includes>
 <!--                <include>*.properties</include>-->
-                <include>*.tpl</include>
+                <include>*.example</include>
             </includes>
         </fileSet>
         <fileSet>
