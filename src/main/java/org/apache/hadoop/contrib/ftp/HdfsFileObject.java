@@ -50,9 +50,11 @@ public class HdfsFileObject implements FtpFile {
         try {
             fs = HdfsOverFtpSystem.getDfs();
             if (create && !fs.exists(this.hdfsPath)) {
-                fs.mkdirs(this.hdfsPath);
                 if (!HdfsOverFtpSystem.getFtpConf().isPermission()) {
+                    fs.mkdirs(this.hdfsPath, FsPermission.getDefault());
                     fs.setPermission(hdfsPath, FsPermission.getDefault());
+                } else {
+                    fs.mkdirs(this.hdfsPath);
                 }
                 fs.setOwner(this.hdfsPath, this.user.getName(), this.user.getMainGroup());
             }
@@ -398,9 +400,11 @@ public class HdfsFileObject implements FtpFile {
         FileSystem dfs = null;
 		try {
             dfs = HdfsOverFtpSystem.getDfs();
-			dfs.mkdirs(hdfsPath);
 			if (!HdfsOverFtpSystem.getFtpConf().isPermission()) {
+			    dfs.mkdirs(hdfsPath, FsPermission.getDefault());
                 dfs.setPermission(hdfsPath, FsPermission.getDefault());
+            } else {
+                dfs.mkdirs(hdfsPath);
             }
 			dfs.setOwner(hdfsPath, user.getName(), user.getMainGroup());
 			return true;
