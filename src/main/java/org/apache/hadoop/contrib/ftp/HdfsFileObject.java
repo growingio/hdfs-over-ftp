@@ -212,6 +212,9 @@ public class HdfsFileObject implements FtpFile {
 	@Override
     public boolean isReadable() {
 		try {
+            if (!HdfsOverFtpSystem.getFtpConf().isPermission()) {
+                return true;
+            }
 			FsPermission permissions = getPermissions();
 			if (user.getName().equals(getOwnerName())) {
 				if (permissions.toString().substring(0, 1).equals("r")) {
@@ -255,6 +258,9 @@ public class HdfsFileObject implements FtpFile {
 	@Override
     public boolean isWritable() {
 		try {
+		    if (!HdfsOverFtpSystem.getFtpConf().isPermission()) {
+		        return true;
+            }
 			FsPermission permissions = getPermissions();
 			if (user.getName().equals(getOwnerName())) {
 				if (permissions.toString().substring(1, 2).equals("w")) {
