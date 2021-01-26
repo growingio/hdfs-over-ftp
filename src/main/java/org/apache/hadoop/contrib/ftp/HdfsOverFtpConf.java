@@ -21,17 +21,19 @@ public class HdfsOverFtpConf implements Serializable {
     private boolean permission;
     private String superuser;
     private String supergroup;
+    private String extAddr;
     private String host;
     private Integer port;
     private Integer sslPort;
     private String passivePorts;
     private String sslPassivePorts;
 
-    public HdfsOverFtpConf(String hdfsPath, boolean permission, String superuser, String supergroup, String host, Integer port, Integer sslPort, String passivePorts, String sslPassivePorts) {
+    public HdfsOverFtpConf(String hdfsPath, boolean permission, String superuser, String supergroup, String extAddr, String host, Integer port, Integer sslPort, String passivePorts, String sslPassivePorts) {
         this.hdfsPath = hdfsPath;
         this.permission = permission;
         this.superuser = superuser;
         this.supergroup = supergroup;
+        this.extAddr = extAddr;
         this.host = host;
         this.port = port;
         this.sslPort = sslPort;
@@ -49,6 +51,10 @@ public class HdfsOverFtpConf implements Serializable {
 
     public String getSupergroup() {
         return supergroup;
+    }
+
+    public String getExtAddr() {
+        return extAddr;
     }
 
     public String getHost() {
@@ -83,6 +89,7 @@ public class HdfsOverFtpConf implements Serializable {
         props.load(inputStream);
 
         String host = null;
+        String extAddr = null;
         int port = 0;
         int sslPort = 0;
         boolean permission;
@@ -93,6 +100,15 @@ public class HdfsOverFtpConf implements Serializable {
             host = props.getProperty("host", null);
             if(host != null) {
                 log.info("host is set. ftp server will listen on " + host);
+            }
+        } catch (Exception e) {
+            log.info("unexpected error", e);
+        }
+
+        try {
+            extAddr = props.getProperty("passive-external-address", null);
+            if(extAddr != null) {
+                log.info("passive-external-address is set. ftp server will use " + extAddr);
             }
         } catch (Exception e) {
             log.info("unexpected error", e);
@@ -148,7 +164,7 @@ public class HdfsOverFtpConf implements Serializable {
             System.exit(1);
         }
 
-        return new HdfsOverFtpConf(hdfsUri, permission, superuser, supergroup, host, port, sslPort, passivePorts, sslPassivePorts);
+        return new HdfsOverFtpConf(hdfsUri, permission, superuser, supergroup, extAddr, host, port, sslPort, passivePorts, sslPassivePorts);
     }
 
     @Override
@@ -158,6 +174,7 @@ public class HdfsOverFtpConf implements Serializable {
                 ", permission=" + permission +
                 ", superuser='" + superuser + '\'' +
                 ", supergroup='" + supergroup + '\'' +
+                ", extAddr=" + extAddr +
                 ", host=" + host +
                 ", port=" + port +
                 ", sslPort=" + sslPort +

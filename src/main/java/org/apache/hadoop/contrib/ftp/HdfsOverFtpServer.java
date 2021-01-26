@@ -57,7 +57,13 @@ public class HdfsOverFtpServer {
         FtpServerFactory serverFactory = new FtpServerFactory();
 
         DataConnectionConfigurationFactory dataConFactory = new DataConnectionConfigurationFactory();
+		if(conf.getHost() != null) {
+			dataConFactory.setPassiveAddress(conf.getHost());
+		}
         dataConFactory.setPassivePorts(conf.getPassivePorts());
+		if(conf.getExtAddr() != null) {
+			dataConFactory.setPassiveExternalAddress(conf.getExtAddr());
+		}
         ListenerFactory listenerFactory = new ListenerFactory();
         listenerFactory.setDataConnectionConfiguration(dataConFactory.createDataConnectionConfiguration());
         listenerFactory.setPort(conf.getPort());
