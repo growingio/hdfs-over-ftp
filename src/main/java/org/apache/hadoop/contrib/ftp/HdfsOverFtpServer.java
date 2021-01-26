@@ -61,7 +61,9 @@ public class HdfsOverFtpServer {
         ListenerFactory listenerFactory = new ListenerFactory();
         listenerFactory.setDataConnectionConfiguration(dataConFactory.createDataConnectionConfiguration());
         listenerFactory.setPort(conf.getPort());
-
+        if(conf.getHost() != null) {
+			listenerFactory.setServerAddress(conf.getHost());
+		}
         serverFactory.addListener("default", listenerFactory.createListener());
 		HdfsUserManager userManager = new HdfsUserManager();
 		final File file = loadResource("/conf/users.properties");

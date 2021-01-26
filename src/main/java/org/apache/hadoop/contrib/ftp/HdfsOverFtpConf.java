@@ -21,16 +21,18 @@ public class HdfsOverFtpConf implements Serializable {
     private boolean permission;
     private String superuser;
     private String supergroup;
+    private String host;
     private Integer port;
     private Integer sslPort;
     private String passivePorts;
     private String sslPassivePorts;
 
-    public HdfsOverFtpConf(String hdfsPath, boolean permission, String superuser, String supergroup, Integer port, Integer sslPort, String passivePorts, String sslPassivePorts) {
+    public HdfsOverFtpConf(String hdfsPath, boolean permission, String superuser, String supergroup, String host, Integer port, Integer sslPort, String passivePorts, String sslPassivePorts) {
         this.hdfsPath = hdfsPath;
         this.permission = permission;
         this.superuser = superuser;
         this.supergroup = supergroup;
+        this.host = host;
         this.port = port;
         this.sslPort = sslPort;
         this.passivePorts = passivePorts;
@@ -47,6 +49,10 @@ public class HdfsOverFtpConf implements Serializable {
 
     public String getSupergroup() {
         return supergroup;
+    }
+
+    public String getHost() {
+        return host;
     }
 
     public Integer getPort() {
@@ -76,12 +82,22 @@ public class HdfsOverFtpConf implements Serializable {
         Properties props = new Properties();
         props.load(inputStream);
 
+        String host = null;
         int port = 0;
         int sslPort = 0;
         boolean permission;
         String passivePorts = null;
         String sslPassivePorts = null;
         String hdfsUri = null;
+        try {
+            host = props.getProperty("host", null);
+            if(host != null) {
+                log.info("host is set. ftp server will listen on " + host);
+            }
+        } catch (Exception e) {
+            log.info("unexpected error", e);
+        }
+
         try {
             port = Integer.parseInt(props.getProperty("port"));
             log.info("port is set. ftp server will be started");
@@ -132,7 +148,7 @@ public class HdfsOverFtpConf implements Serializable {
             System.exit(1);
         }
 
-        return new HdfsOverFtpConf(hdfsUri, permission, superuser, supergroup, port, sslPort, passivePorts, sslPassivePorts);
+        return new HdfsOverFtpConf(hdfsUri, permission, superuser, supergroup, host, port, sslPort, passivePorts, sslPassivePorts);
     }
 
     @Override
@@ -142,6 +158,7 @@ public class HdfsOverFtpConf implements Serializable {
                 ", permission=" + permission +
                 ", superuser='" + superuser + '\'' +
                 ", supergroup='" + supergroup + '\'' +
+                ", host=" + host +
                 ", port=" + port +
                 ", sslPort=" + sslPort +
                 ", passivePorts='" + passivePorts + '\'' +
